@@ -19,19 +19,27 @@ body {
     overflow: hidden;
 }
 
-/* ===== 인트로 ===== */
-.intro {
+/* ===== 공통 화면 레이어 ===== */
+.layer {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: black;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 10;
+    flex-direction: column;
+    background: black;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
 }
 
+.layer.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ===== 인트로 ===== */
 .intro h1 {
     font-size: 4rem;
     color: #ff003c;
@@ -51,16 +59,20 @@ body {
 .intro button:hover {
     background: #ff003c;
     color: black;
-    box-shadow: 0 0 15px #ff003c;
+}
+
+/* ===== 로딩 ===== */
+.loading-text {
+    color: #ff003c;
+    font-size: 2rem;
+    border-right: 2px solid #ff003c;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 /* ===== 메인 ===== */
-.main-wrapper {
-    display: none;
-    height: 100%;
-    width: 100%;
-    justify-content: center;
-    align-items: center;
+.main {
+    background: transparent;
 }
 
 .main-box {
@@ -97,7 +109,6 @@ body {
     color: #ff003c;
 }
 
-/* 활성화된 메뉴 */
 .sidebar li.active {
     background: #ff003c;
     color: black;
@@ -113,13 +124,12 @@ body {
     position: relative;
 }
 
-/* 화면 공통 */
 .screen {
     position: absolute;
     text-align: center;
     opacity: 0;
-    transform: translateY(40px);
-    transition: 0.5s;
+    transform: translateY(30px);
+    transition: 0.5s ease;
 }
 
 .screen.active-screen {
@@ -127,7 +137,6 @@ body {
     transform: translateY(0);
 }
 
-/* 프로필 이미지 */
 .profile-img {
     width: 180px;
     height: 180px;
@@ -140,7 +149,6 @@ body {
 .nickname {
     font-size: 1.3rem;
     color: #ff003c;
-    letter-spacing: 2px;
 }
 </style>
 </head>
@@ -148,13 +156,18 @@ body {
 <body>
 
 <!-- 인트로 -->
-<div class="intro" id="intro">
+<div class="layer intro active" id="intro">
     <h1>Sawa Test Site</h1>
     <button onclick="enterSite()">ENTER</button>
 </div>
 
+<!-- 로딩 -->
+<div class="layer loading" id="loading">
+    <div class="loading-text" id="loadingText"></div>
+</div>
+
 <!-- 메인 -->
-<div class="main-wrapper" id="main">
+<div class="layer main" id="main">
     <div class="main-box">
 
         <div class="sidebar">
@@ -167,46 +180,65 @@ body {
 
         <div class="content">
 
-            <!-- Home -->
             <div id="home" class="screen active-screen">
                 <img class="profile-img"
                      src="https://youngest-chocolate-kpyw8awlkj.edgeone.app/IMG_1886.jpeg">
-                <div class="nickname">Sawa</div>
+                <div class="nickname">@Sawa_</div>
             </div>
 
-            <!-- Profile -->
             <div id="profile" class="screen">
                 <h2 style="color:#ff003c;">PROFILE</h2>
-                <p>Crepe @Sawa_ Test</p>
             </div>
 
-            <!-- Pic -->
             <div id="pic" class="screen">
                 <h2 style="color:#ff003c;">PIC</h2>
-                <p>사진이 업다...</p>
             </div>
 
         </div>
-
     </div>
 </div>
 
 <script>
+function fadeTo(from, to) {
+    from.classList.remove("active");
+    setTimeout(() => {
+        to.classList.add("active");
+    }, 600);
+}
+
 function enterSite() {
-    document.getElementById("intro").style.display = "none";
-    document.getElementById("main").style.display = "flex";
+    const intro = document.getElementById("intro");
+    const loading = document.getElementById("loading");
+    const main = document.getElementById("main");
+
+    fadeTo(intro, loading);
+
+    const text = "Loading...";
+    let i = 0;
+    const speed = 100;
+
+    setTimeout(() => {
+        function typeWriter() {
+            if (i < text.length) {
+                document.getElementById("loadingText").innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, speed);
+            } else {
+                setTimeout(() => {
+                    fadeTo(loading, main);
+                }, 500);
+            }
+        }
+        typeWriter();
+    }, 600);
 }
 
 function changeTab(element, targetId) {
-
-    // 사이드 active 제거
     document.querySelectorAll(".sidebar li").forEach(li => {
         li.classList.remove("active");
     });
-
     element.classList.add("active");
 
-    // 화면 전환
     document.querySelectorAll(".screen").forEach(screen => {
         screen.classList.remove("active-screen");
     });
